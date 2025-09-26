@@ -41,17 +41,49 @@ class TotpHomePage extends StatefulWidget {
 class _TotpHomePageState extends State<TotpHomePage> {
   final TextEditingController _controller = TextEditingController();
   String? _totpCode;
+  int _remainingSeconds = 30;
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _remainingSeconds = 30 - (DateTime.now().second % 30);
+        if (_remainingSeconds == 30) {
+          _generateTotp(); // Regenerate when interval resets
+        }
+      });
+    });
+  }
 
   void _generateTotp() {
     if (_controller.text.isNotEmpty) {
-      final code = OTP.generateTOTPCodeString(
-        _controller.text.trim(),
-        DateTime.now().millisecondsSinceEpoch,
-        interval: 30,
-        length: 6,
-        algorithm: Algorithm.SHA1,
-      );
-      setState(() => _totpCode = code);
+      try {
+        final code = OTP.generateTOTPCodeString(
+          _controller.text.trim(),
+          DateTime.now().millisecondsSinceEpoch,
+          interval: 30,
+          length: 6,
+          algorithm: Algorithm.SHA1,
+        );
+        setState(() => _totpCode = code);
+      } catch (e) {
+        setState(() => _totpCode = "Invalid Secret");
+      }
+    } else {
+      setState(() => _totpCode = null);
     }
   }
 
@@ -73,7 +105,7 @@ class _TotpHomePageState extends State<TotpHomePage> {
   }
 
   void _copyTotp() {
-    if (_totpCode != null) {
+    if (_totpCode != null && _totpCode != "Invalid Secret") {
       Clipboard.setData(ClipboardData(text: _totpCode!));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('TOTP copied!')),
@@ -89,6 +121,8 @@ class _TotpHomePageState extends State<TotpHomePage> {
       const Color(0xFFA376A2),
       const Color(0xFFDDC3C3),
     ];
+
+    final progressValue = _remainingSeconds / 30;
 
     return Scaffold(
       appBar: AppBar(
@@ -148,6 +182,47 @@ class _TotpHomePageState extends State<TotpHomePage> {
             const SizedBox(height: 40),
 
             if (_totpCode != null) ...[
+              // Countdown timer and progress bar
+              Column(
+                children: [
+                  SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Stack(
+                      children: [
+                        CircularProgressIndicator(
+                          value: progressValue,
+                          backgroundColor: palette[3],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            progressValue > 0.2 ? palette[1] : Colors.red,
+                          ),
+                          strokeWidth: 4,
+                        ),
+                        Center(
+                          child: Text(
+                            _remainingSeconds.toString(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: palette[0],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Expires in $_remainingSeconds seconds",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: palette[0],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
               Text(
                 "Your TOTP:",
                 style: TextStyle(
@@ -161,7 +236,7 @@ class _TotpHomePageState extends State<TotpHomePage> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: palette[1],
+                  color: _totpCode == "Invalid Secret" ? Colors.red : palette[1],
                 ),
               ),
               const SizedBox(height: 20),
@@ -174,7 +249,7 @@ class _TotpHomePageState extends State<TotpHomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  onPressed: _copyTotp,
+                  onPressed: _totpCode == "Invalid Secret" ? null : _copyTotp,
                   icon: const Icon(Icons.copy),
                   label: const Text("Copy"),
                 ),
