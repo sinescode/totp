@@ -1,7 +1,7 @@
-import 'dart:async'; // Add this import for Timer
+import 'dart:async'; 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:otp/otp.dart'; // Add this in pubspec.yaml: otp: ^3.1.0
+import 'package:otp/otp.dart'; 
 
 void main() {
   runApp(const TotpApp());
@@ -78,6 +78,7 @@ class _TotpHomePageState extends State<TotpHomePage> {
           interval: 30,
           length: 6,
           algorithm: Algorithm.SHA1,
+          isGoogle: true, // Added for compatibility with Google Authenticator
         );
         setState(() => _totpCode = code);
       } catch (e) {
