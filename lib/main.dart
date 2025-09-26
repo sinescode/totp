@@ -112,19 +112,35 @@ class _TotpHomePageState extends State<TotpHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: palette[1],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: palette[1],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18),
+                      ),
+                      onPressed: _pasteFromClipboard,
+                      child: const Text("Paste"),
+                    ),
                   ),
-                  onPressed: _pasteFromClipboard,
-                  child: const Text("Paste"),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: palette[2],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: palette[2],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18),
+                      ),
+                      onPressed: _clearInput,
+                      child: const Text("Clear"),
+                    ),
                   ),
-                  onPressed: _clearInput,
-                  child: const Text("Clear"),
                 ),
               ],
             ),
@@ -149,13 +165,19 @@ class _TotpHomePageState extends State<TotpHomePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: palette[0],
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: palette[0],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: const TextStyle(fontSize: 18),
+                  ),
+                  onPressed: _copyTotp,
+                  icon: const Icon(Icons.copy),
+                  label: const Text("Copy"),
                 ),
-                onPressed: _copyTotp,
-                icon: const Icon(Icons.copy),
-                label: const Text("Copy"),
               ),
             ]
           ],
